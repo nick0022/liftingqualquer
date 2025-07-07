@@ -83,7 +83,7 @@ local PrincipalSection = Tabs.Farm:Section({
         end
     end)
   
-  local Toggle = Tabs.Farm:Toggle({
+  local LevantarToggle = Tabs.Farm:Toggle({
    Title = "auto levantar",
    Desc = "funciona sem precisar estar com o peso selecionado",
    Icon = "bird",
@@ -95,7 +95,7 @@ local PrincipalSection = Tabs.Farm:Section({
   end
   })
 
-  local Toggle = Tabs.Farm:Toggle({
+  local ComprarToggle = Tabs.Farm:Toggle({
     Title = "Auto Comprar",
     Desc = "Compra todos os pesos disponiveis auto",
     Icon = "bird",
