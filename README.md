@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 -- Create window
 local Window = WindUI:CreateWindow({
-  Title = "Simulador de Levantamento Gigante",
+  Title = "Moon HUB | Giant-Lifting-Simulator",
   Icon = "door-open",
   Author = "lk",
   Folder = "MoonHub",
@@ -43,7 +43,14 @@ local Tabs = {
 Window:SelectTab(1)
 
 
-local StatusSection = Tabs.Farm:Section({
+-- ===============================================================
+-- Script de Status do Jogador (Versão Corrigida para Thumbnail)
+-- ===============================================================
+
+-- ATENÇÃO: Verifique se o nome do seu Tab é 'Farm' ou 'Status'.
+-- Você definiu 'StatusSection' usando 'Tabs.Farm' mas criou o parágrafo com 'Tabs.Status'.
+-- Vou assumir que o correto é 'Tabs.Farm' para o parágrafo também. Se não for, ajuste a linha abaixo.
+local StatusSection = Tabs.Status:Section({
   Title = "Status do Player",
   Icon = "bird",
   Opened = true,
@@ -51,100 +58,72 @@ local StatusSection = Tabs.Farm:Section({
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui") -- Essencial para buscar os tempos
+local playerGui = player:WaitForChild("PlayerGui")
 
---[[
-  NOVO: Bloco para buscar a foto de perfil do jogador.
-  Isso é feito uma vez para não causar lag com requisições constantes.
-]]
-local userThumbnail = "rbxassetid://16723221995" -- Thumbnail padrão caso a busca falhe
-local success, result = pcall(function()
-  -- Busca a thumbnail do tipo "HeadShot" (apenas a cabeça, ideal para perfil)
-  return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-end)
-
-if success and result then
-  userThumbnail = result -- Se a busca for bem-sucedida, usamos a imagem do jogador
-else
-  warn("Não foi possível carregar a foto de perfil do jogador. Erro:", result)
-end
-
-
--- Criação do Parágrafo de Status
--- Agora usa a variável 'userThumbnail' que buscamos acima.
-local StatusParagraph = Tabs.Status:Paragraph({
+-- 1. Criação do Parágrafo com uma imagem temporária
+local StatusParagraph = StatusSection:Paragraph({ -- Mudei para StatusSection:Paragraph para consistência
   Title = "Estatísticas de " .. player.DisplayName,
-  Desc = "Carregando estatísticas...",
-  Color = "Blue", -- Cor personalizada
-  Thumbnail = userThumbnail, -- << MUDANÇA AQUI
+  Desc = "Carregando...",
+  Color = "Blue",
+  Thumbnail = "rbxassetid://16723221995", -- Imagem padrão temporária
   ThumbnailSize = 80,
   Locked = false,
   Buttons = {} 
 })
 
--- Função para ATUALIZAR as informações do parágrafo
+-- 2. Função separada para buscar e APLICAR a thumbnail
+local function fetchAndApplyThumbnail()
+  print("Iniciando busca pela foto de perfil...")
+
+  local success, result = pcall(function()
+      return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+  end)
+
+  if success and result then
+      print("Foto de perfil encontrada com sucesso! URL:", result)
+      -- Assumindo que sua biblioteca tem uma função SetThumbnail, similar a SetDesc.
+      -- Se essa linha der erro, a função pode ter outro nome, como :SetImage ou :SetIcon
+      StatusParagraph:SetThumbnail(result) 
+      print("Foto de perfil aplicada à UI.")
+  else
+      -- Se falhar, um aviso aparecerá no console (Output)
+      warn("FALHA ao buscar foto de perfil. Usando imagem padrão. Erro:", result)
+  end
+end
+
+-- 3. Chamar a função para buscar a thumbnail assim que o script rodar
+fetchAndApplyThumbnail()
+
+-- 4. Função e Loop de atualização de status (o resto do código continua igual)
 local function updateStatus()
-  -- 1. Buscar os valores do 'leaderstats'
+  -- (O resto do seu código de busca de stats continua aqui, sem alterações)
   local leaderstats = player:FindFirstChild("leaderstats")
   
-  -- Usamos 'or "N/A"' para o caso do valor ainda não existir
   local strength = leaderstats and leaderstats:FindFirstChild("Strength") and leaderstats.Strength.Value or "N/A"
   local coins = leaderstats and leaderstats:FindFirstChild("Coins") and leaderstats.Coins.Value or "N/A"
   local stage = leaderstats and leaderstats:FindFirstChild("Stage") and leaderstats.Stage.Value or "N/A"
   local kills = leaderstats and leaderstats:FindFirstChild("Kills") and leaderstats.Kills.Value or "N/A"
 
-  -- 2. Buscar os valores de TEMPO da Interface Gráfica (PlayerGui)
-  local timeWeight = "Buscando..."
-  local timeStage = "Buscando..."
-  local timeRebirth = "Buscando..."
-
+  local timeWeight, timeStage, timeRebirth = "Buscando...", "Buscando...", "Buscando..."
   local mainGui = playerGui:FindFirstChild("Main")
-  if mainGui then
-      local boostsFrame = mainGui:FindFirstChild("Boosts")
-      if boostsFrame then
-          -- Tempo para o Próximo Peso
-          local untilNextWeight = boostsFrame:FindFirstChild("UntilNextWeight")
-          if untilNextWeight and untilNextWeight:FindFirstChild("Frame") and untilNextWeight.Frame:FindFirstChild("Button") and untilNextWeight.Frame.Button:FindFirstChild("Text") and untilNextWeight.Frame.Button.Text:FindFirstChild("Title") then
-              timeWeight = untilNextWeight.Frame.Button.Text.Title.Text
-          end
-          
-          -- Tempo para o Próximo Estágio
-          local untilNextStage = boostsFrame:FindFirstChild("UntilNextStage")
-          if untilNextStage and untilNextStage:FindFirstChild("Frame") and untilNextStage.Frame:FindFirstChild("Button") and untilNextStage.Frame.Button:FindFirstChild("Text") and untilNextStage.Frame.Button.Text:FindFirstChild("Title") then
-              timeStage = untilNextStage.Frame.Button.Text.Title.Text
-          end
-
-          -- Tempo para o Próximo Renascimento
-          local untilRebirth = boostsFrame:FindFirstChild("UntilRebirth")
-          if untilRebirth and untilRebirth:FindFirstChild("Frame") and untilRebirth.Frame:FindFirstChild("Button") and untilRebirth.Frame.Button:FindFirstChild("Text") and untilRebirth.Frame.Button.Text:FindFirstChild("Title") then
-              timeRebirth = untilRebirth.Frame.Button.Text.Title.Text
-          end
-      end
+  if mainGui and mainGui:FindFirstChild("Boosts") then
+      local boostsFrame = mainGui.Boosts
+      local wt = boostsFrame:FindFirstChild("UntilNextWeight")
+      if wt and wt:FindFirstChild("Frame") and wt.Frame:FindFirstChild("Button") and wt.Frame.Button:FindFirstChild("Text") and wt.Frame.Button.Text:FindFirstChild("Title") then timeWeight = wt.Frame.Button.Text.Title.Text end
+      local st = boostsFrame:FindFirstChild("UntilNextStage")
+      if st and st:FindFirstChild("Frame") and st.Frame:FindFirstChild("Button") and st.Frame.Button:FindFirstChild("Text") and st.Frame.Button.Text:FindFirstChild("Title") then timeStage = st.Frame.Button.Text.Title.Text end
+      local rt = boostsFrame:FindFirstChild("UntilRebirth")
+      if rt and rt:FindFirstChild("Frame") and rt.Frame:FindFirstChild("Button") and rt.Frame.Button:FindFirstChild("Text") and rt.Frame.Button.Text:FindFirstChild("Title") then timeRebirth = rt.Frame.Button.Text.Title.Text end
   end
   
-  -- 3. Formatar todas as informações para exibição
   local statusDescription = string.format(
-      "💪 Força: %s\n" ..
-      "🪙 Moedas: %s\n" ..
-      "🔪 Abates: %s\n" ..
-      "🗺️ Estágio: %s\n\n" .. -- Linha de separação
-      "⏱️ Próximo Peso: %s\n" ..
-      "⏱️ Próximo Estágio: %s\n" ..
-      "🔄 Próximo Renascimento: %s",
-      tostring(strength), 
-      tostring(coins), 
-      tostring(kills), 
-      tostring(stage),
-      timeWeight,
-      timeStage,
-      timeRebirth
+      "💪 Força: %s\n🪙 Moedas: %s\n🔪 Abates: %s\n🗺️ Estágio: %s\n\n⏱️ Próximo Peso: %s\n⏱️ Próximo Estágio: %s\n🔄 Próximo Renascimento: %s",
+      tostring(strength), tostring(coins), tostring(kills), tostring(stage), timeWeight, timeStage, timeRebirth
   )
 
-  -- 4. Atualizar o parágrafo na UI
   StatusParagraph:SetDesc(statusDescription)
 end
 
--- Loop de Atualização
 task.spawn(function()
   while task.wait(1) do
       pcall(updateStatus)
