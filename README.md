@@ -24,11 +24,7 @@ local Window = WindUI:CreateWindow({
   },
   KeySystem = { -- <- ↓ remove this all, if you dont neet the key system
       Key = { "1234", "5678" },
-      Note = "Example Key System. 1234",
-      Thumbnail = {
-          Image = "rbxassetid://",
-          Title = "Thumbnail",
-      },
+      Note = "key: 1234",
       URL = "https://github.com/Footagesus/WindUI",
       SaveKey = true,
   },
@@ -36,7 +32,7 @@ local Window = WindUI:CreateWindow({
 
 -- Create tabs
 local Tabs = {
-    Status = Window:Tab({Title = "Status", Icon = "package"}),
+    Status = Window:Tab({Title = "Home", Icon = "house"}),
     Farm = Window:Tab({Title = "Farm", Icon = "package"}),
 }
 
@@ -46,7 +42,7 @@ Window:SelectTab(1)
 
 local StatusSection = Tabs.Status:Section({
   Title = "Status do Player",
-  Icon = "bird",
+  Icon = "chart-no-axes-column",
   Opened = true,
 })
 
@@ -235,7 +231,7 @@ local PrincipalSection = Tabs.Farm:Section({
   })
 
   local Comprar = Tabs.Farm:Toggle({
-    Title = "Auto Comprar",
+    Title = "Auto Comprar Pesos",
     Desc = "Compra todos os pesos disponiveis automaticamente",
     Icon = "package",
     Type = "Checkbox",
@@ -245,6 +241,111 @@ local PrincipalSection = Tabs.Farm:Section({
       autoComprarAtivo = state
     end
 })
+
+-- ===============================================================
+-- Script de Compra Automática de Estágio
+-- ===============================================================
+
+-- Serviços e Jogador Local
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Configurações do sistema
+local REMOTE_NAME = "2663824b812c4e1e80abcb37b7ea983c"
+local TARGET_STAGE = 51
+local remoteEvent = ReplicatedStorage:WaitForChild(REMOTE_NAME)
+
+-- Variáveis de controle
+local isAutoBuyActive = false   -- Controlado pelo Toggle
+local isCurrentlyBuying = false -- Debounce para evitar spam de compras
+
+-- Função que executa a compra do próximo estágio
+local function performStageBuy()
+    if isCurrentlyBuying then return end
+    isCurrentlyBuying = true
+    
+    -- Pega o estágio atual do jogador nos leaderstats
+    local leaderstats = player:FindFirstChild("leaderstats")
+    local stageStat = leaderstats and leaderstats:FindFirstChild("Stage")
+
+    if not stageStat then
+        print("[Auto-Stage] Não foi possível encontrar o leaderstat 'Stage'.")
+        isCurrentlyBuying = false
+        return
+    end
+
+    local currentStage = stageStat.Value
+
+    -- Verifica se já atingimos a meta
+    if currentStage >= TARGET_STAGE then
+        print("[Auto-Stage] Meta de Stage", TARGET_STAGE, "atingida! Desativando sistema.")
+        isAutoBuyActive = false -- Desativa o sistema automaticamente
+        -- Aqui você poderia também desativar o Toggle visualmente se sua UI permitir
+        isCurrentlyBuying = false
+        return
+    end
+
+    local nextStageNumber = currentStage + 1
+    local nextStageName = "Stage" .. tostring(nextStageNumber)
+    
+    -- Monta os argumentos como você especificou
+    local args = {
+        -4,
+        nextStageName
+    }
+
+    print("[Auto-Stage] Comprando o próximo estágio:", nextStageName)
+    remoteEvent:FireServer(unpack(args))
+
+    task.wait(1) -- Pequena pausa para o servidor processar a compra
+    isCurrentlyBuying = false
+end
+
+-- Criação do Toggle para ativar/desativar o sistema
+local AutoStageToggle = Tabs.Farm:Toggle({
+    Title = "Auto Comprar Estágio",
+    Desc = "Compra o próximo estágio automaticamente até o " .. TARGET_STAGE,
+    Icon = "package", -- Ícone de "level up"
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        isAutoBuyActive = state
+        if state then
+            print("[Auto-Stage] Sistema ATIVADO.")
+        else
+            print("[Auto-Stage] Sistema DESATIVADO.")
+        end
+    end
+})
+
+-- Loop principal que verifica as condições em segundo plano
+task.spawn(function()
+    while task.wait(1) do
+        -- Se o sistema estiver desligado ou já estiver comprando, pula a verificação
+        if not isAutoBuyActive or isCurrentlyBuying then
+            continue 
+        end
+        
+        -- Busca o texto do timer do próximo estágio
+        local timeStage = "N/A"
+        local mainGui = playerGui:FindFirstChild("Main")
+        if mainGui and mainGui:FindFirstChild("Boosts") then
+            local boostsFrame = mainGui.Boosts
+            local st = boostsFrame:FindFirstChild("UntilNextStage")
+            if st and st:FindFirstChild("Frame") and st.Frame:FindFirstChild("Button") and st.Frame.Button:FindFirstChild("Text") and st.Frame.Button.Text:FindFirstChild("Title") then
+                timeStage = st.Frame.Button.Text.Title.Text
+            end
+        end
+
+        -- CONDIÇÃO DE ATIVAÇÃO: Verifica se o timer do estágio zerou
+        if timeStage == "00:00:00" then
+            print("[Auto-Stage] Condição atingida! Tempo de estágio zerado.")
+            performStageBuy() -- Chama a função de compra
+        end
+    end
+end)
 
 local EquipBest = Tabs.Farm:Toggle({
   Title = "Auto Equipar melhor pet",
