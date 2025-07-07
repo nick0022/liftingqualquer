@@ -61,7 +61,7 @@ local playerGui = player:WaitForChild("PlayerGui") -- Essencial para buscar os t
 
 -- Criação do Parágrafo de Status
 -- Usamos textos iniciais que serão substituídos na primeira atualização.
-local StatusParagraph = Tab:Paragraph({
+local StatusParagraph = Tabs.Status:Paragraph({
     Title = "Estatísticas de " .. player.DisplayName,
     Desc = "Carregando estatísticas...",
     Color = "gray", -- Cor personalizada
