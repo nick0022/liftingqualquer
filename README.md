@@ -415,7 +415,7 @@ local function performAutoSell()
         print("[Auto-Sell] Personagem não encontrado para retornar.")
     end
 
-    task.wait(0.5)
+    task.wait(0.3)
     print("[Auto-Sell] ROTINA FINALIZADA.")
     isCurrentlySelling = false
 end
@@ -439,7 +439,7 @@ local AutoSellToggle = Tabs.Farm:Toggle({
 
 -- Loop principal que verifica as condições em segundo plano
 task.spawn(function()
-    while task.wait(1) do
+    while task.wait(0.3) do
         if not isAutoSellActive or isCurrentlySelling then
             continue 
         end
