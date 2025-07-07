@@ -358,7 +358,7 @@ task.spawn(function()
         end
 
         -- CONDIÇÃO DE ATIVAÇÃO: Verifique se o texto é exatamente "0"
-        if timeWeight == "0" or timeStage == "0" then
+        if timeWeight == "00:00:00" or timeStage == "00:00:00" then
             print("[Auto-Sell] Condição atingida! Tempo zerado.")
             performAutoSell()
         end
