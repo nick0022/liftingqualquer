@@ -58,8 +58,6 @@ local playerGui = player:WaitForChild("PlayerGui")
 local StatusParagraph = Tabs.Status:Paragraph({ -- Mudei para StatusSection:Paragraph para consistência
   Title = "Estatísticas de " .. player.DisplayName,
   Desc = "Carregando...",
-  Color = "Blue",
-  ThumbnailSize = 80,
   Locked = false,
   Buttons = {} 
 })
