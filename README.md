@@ -61,7 +61,7 @@ local argumentoDoClique = "24" --<< MUDANÇA AQUI: Adicionado o argumento que vo
 
 --// Interface do Usuário (Seu código) \\--
 -- Supondo que 'Tab' já foi definido pela sua UI Library.
-local Toggle = Tab:Toggle({
+local Toggle = Tabs.Farm:Toggle({
     Title = "Auto-Clique",
     Desc = "Ative para começar a clicar automaticamente.",
     Icon = "rbxassetid://6034823491", -- Ícone de um dedo clicando
