@@ -79,11 +79,49 @@ local PrincipalSection = Tabs.Farm:Section({
               }
               game:GetService("ReplicatedStorage"):WaitForChild("1eb183c1aa464630895584d6306f8a3c"):InvokeServer(unpack(args))              
             end
-            task.wait(0.1) -- Usar task.wait é a prática moderna no lugar de wait()
+            task.wait(1) -- Usar task.wait é a prática moderna no lugar de wait()
         end
     end)
   
-  local LevantarToggle = Tabs.Farm:Toggle({
+
+    -- Variável para controlar se a função de auto levantar está ativa
+    local autoEquipBestAtivo = false
+  
+    -- Inicia um loop em uma nova thread para não travar o jogo
+    task.spawn(function()
+        while true do
+            -- A cada 0.1 segundos, verifica se a função está ativa
+            if autoEquipBestAtivo then
+              local args = {
+                "EQUIPBEST"
+              }
+              game:GetService("ReplicatedStorage"):WaitForChild("7c467027f4c5402bb8b0472abe80d31c"):FireServer(unpack(args))                        
+            end
+            task.wait(1) -- Usar task.wait é a prática moderna no lugar de wait()
+        end
+    end)
+
+
+        -- Variável para controlar se a função de auto levantar está ativa
+        local autoRollCrateAtivo = false
+  
+        -- Inicia um loop em uma nova thread para não travar o jogo
+        task.spawn(function()
+            while true do
+                -- A cada 0.1 segundos, verifica se a função está ativa
+                if autoRollCrateAtivo then
+                  local args = {
+                    "ROLL",
+                    "WoodenCrate"
+                  }
+                  game:GetService("ReplicatedStorage"):WaitForChild("PetsEvent"):FireServer(unpack(args))                                        
+                end
+                task.wait(0.5) -- Usar task.wait é a prática moderna no lugar de wait()
+            end
+        end)
+
+
+  local Levantar = Tabs.Farm:Toggle({
    Title = "auto levantar",
    Desc = "funciona sem precisar estar com o peso selecionado",
    Icon = "bird",
@@ -95,9 +133,9 @@ local PrincipalSection = Tabs.Farm:Section({
   end
   })
 
-  local ComprarToggle = Tabs.Farm:Toggle({
+  local Comprar = Tabs.Farm:Toggle({
     Title = "Auto Comprar",
-    Desc = "Compra todos os pesos disponiveis auto",
+    Desc = "Compra todos os pesos disponiveis automaticamente",
     Icon = "bird",
     Type = "Checkbox",
     Default = false,
@@ -105,4 +143,28 @@ local PrincipalSection = Tabs.Farm:Section({
 
       autoComprarAtivo = state
     end
+})
+
+local EquipBest = Tabs.Farm:Toggle({
+  Title = "Auto Equipar melhor pet",
+  Desc = "equipa seus melhores pets automaticamente",
+  Icon = "bird",
+  Type = "Checkbox",
+  Default = false,
+  Callback = function(state) 
+
+    autoEquipBestAtivo = state
+  end
+})
+
+local RollCrate = Tabs.Farm:Toggle({
+  Title = "Auto Girar caixa",
+  Desc = "gira caixa automaticamente",
+  Icon = "bird",
+  Type = "Checkbox",
+  Default = false,
+  Callback = function(state) 
+
+    autoRollCrateAtivo = state
+  end
 })
