@@ -243,7 +243,7 @@ local PrincipalSection = Tabs.Farm:Section({
 })
 
 -- ===============================================================
--- Script de Compra Automática de Estágio
+-- Script de Compra Automática de Estágio (VERSÃO CORRIGIDA)
 -- ===============================================================
 
 -- Serviços e Jogador Local
@@ -258,15 +258,14 @@ local TARGET_STAGE = 51
 local remoteEvent = ReplicatedStorage:WaitForChild(REMOTE_NAME)
 
 -- Variáveis de controle
-local isAutoBuyActive = false   -- Controlado pelo Toggle
-local isCurrentlyBuying = false -- Debounce para evitar spam de compras
+local isAutoBuyActive = false
+local isCurrentlyBuying = false
 
 -- Função que executa a compra do próximo estágio
 local function performStageBuy()
     if isCurrentlyBuying then return end
     isCurrentlyBuying = true
     
-    -- Pega o estágio atual do jogador nos leaderstats
     local leaderstats = player:FindFirstChild("leaderstats")
     local stageStat = leaderstats and leaderstats:FindFirstChild("Stage")
 
@@ -276,13 +275,23 @@ local function performStageBuy()
         return
     end
 
-    local currentStage = stageStat.Value
+    -- =========================================================================================
+    -- >> CORREÇÃO AQUI <<
+    -- Convertendo o valor do 'Stage' (que é um texto) para um número usando tonumber()
+    local currentStage = tonumber(stageStat.Value)
+
+    -- Adicionamos uma segurança para caso o valor não seja um número válido
+    if not currentStage then
+        print("[Auto-Stage] O valor do Stage não é um número! Valor:", stageStat.Value)
+        isCurrentlyBuying = false
+        return
+    end
+    -- =========================================================================================
 
     -- Verifica se já atingimos a meta
     if currentStage >= TARGET_STAGE then
         print("[Auto-Stage] Meta de Stage", TARGET_STAGE, "atingida! Desativando sistema.")
-        isAutoBuyActive = false -- Desativa o sistema automaticamente
-        -- Aqui você poderia também desativar o Toggle visualmente se sua UI permitir
+        isAutoBuyActive = false
         isCurrentlyBuying = false
         return
     end
@@ -290,16 +299,12 @@ local function performStageBuy()
     local nextStageNumber = currentStage + 1
     local nextStageName = "Stage" .. tostring(nextStageNumber)
     
-    -- Monta os argumentos como você especificou
-    local args = {
-        -4,
-        nextStageName
-    }
+    local args = { -4, nextStageName }
 
     print("[Auto-Stage] Comprando o próximo estágio:", nextStageName)
     remoteEvent:FireServer(unpack(args))
 
-    task.wait(1) -- Pequena pausa para o servidor processar a compra
+    task.wait(1)
     isCurrentlyBuying = false
 end
 
@@ -307,7 +312,7 @@ end
 local AutoStageToggle = Tabs.Farm:Toggle({
     Title = "Auto Comprar Estágio",
     Desc = "Compra o próximo estágio automaticamente quanto tiver o tempo zerado.",
-    Icon = "package", -- Ícone de "level up"
+    Icon = "package",
     Type = "Checkbox",
     Default = false,
     Callback = function(state)
@@ -323,12 +328,10 @@ local AutoStageToggle = Tabs.Farm:Toggle({
 -- Loop principal que verifica as condições em segundo plano
 task.spawn(function()
     while task.wait(1) do
-        -- Se o sistema estiver desligado ou já estiver comprando, pula a verificação
         if not isAutoBuyActive or isCurrentlyBuying then
             continue 
         end
         
-        -- Busca o texto do timer do próximo estágio
         local timeStage = "N/A"
         local mainGui = playerGui:FindFirstChild("Main")
         if mainGui and mainGui:FindFirstChild("Boosts") then
@@ -339,10 +342,9 @@ task.spawn(function()
             end
         end
 
-        -- CONDIÇÃO DE ATIVAÇÃO: Verifica se o timer do estágio zerou
         if timeStage == "00:00:00" then
             print("[Auto-Stage] Condição atingida! Tempo de estágio zerado.")
-            performStageBuy() -- Chama a função de compra
+            performStageBuy()
         end
     end
 end)
