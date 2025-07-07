@@ -43,13 +43,7 @@ local Tabs = {
 Window:SelectTab(1)
 
 
--- ===============================================================
--- Script de Status do Jogador (Versão Corrigida para Thumbnail)
--- ===============================================================
 
--- ATENÇÃO: Verifique se o nome do seu Tab é 'Farm' ou 'Status'.
--- Você definiu 'StatusSection' usando 'Tabs.Farm' mas criou o parágrafo com 'Tabs.Status'.
--- Vou assumir que o correto é 'Tabs.Farm' para o parágrafo também. Se não for, ajuste a linha abaixo.
 local StatusSection = Tabs.Status:Section({
   Title = "Status do Player",
   Icon = "bird",
@@ -65,34 +59,10 @@ local StatusParagraph = StatusSection:Paragraph({ -- Mudei para StatusSection:Pa
   Title = "Estatísticas de " .. player.DisplayName,
   Desc = "Carregando...",
   Color = "Blue",
-  Thumbnail = "rbxassetid://16723221995", -- Imagem padrão temporária
   ThumbnailSize = 80,
   Locked = false,
   Buttons = {} 
 })
-
--- 2. Função separada para buscar e APLICAR a thumbnail
-local function fetchAndApplyThumbnail()
-  print("Iniciando busca pela foto de perfil...")
-
-  local success, result = pcall(function()
-      return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-  end)
-
-  if success and result then
-      print("Foto de perfil encontrada com sucesso! URL:", result)
-      -- Assumindo que sua biblioteca tem uma função SetThumbnail, similar a SetDesc.
-      -- Se essa linha der erro, a função pode ter outro nome, como :SetImage ou :SetIcon
-      StatusParagraph:SetThumbnail(result) 
-      print("Foto de perfil aplicada à UI.")
-  else
-      -- Se falhar, um aviso aparecerá no console (Output)
-      warn("FALHA ao buscar foto de perfil. Usando imagem padrão. Erro:", result)
-  end
-end
-
--- 3. Chamar a função para buscar a thumbnail assim que o script rodar
-fetchAndApplyThumbnail()
 
 -- 4. Função e Loop de atualização de status (o resto do código continua igual)
 local function updateStatus()
