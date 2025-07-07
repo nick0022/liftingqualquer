@@ -43,68 +43,66 @@ Window:SelectTab(1)
 
 
 local PrincipalSection = Tabs.Farm:Section({
-  Title = "Funções Principais",
-  Icon = "bird",
-  Opened = true,
-})
+   Title = "Funções Principais",
+   Icon = "bird",
+   Opened = true,
+  })
+  
+  -- Variável para controlar se a função de auto levantar está ativa
+  local autoLevantarAtivo = false
+  
+  -- Inicia um loop em uma nova thread para não travar o jogo
+  task.spawn(function()
+      while true do
+          -- A cada 0.1 segundos, verifica se a função está ativa
+          if autoLevantarAtivo then
+              local args = {
+                  "24"
+              }
+              game:GetService("ReplicatedStorage"):WaitForChild("2663824b812c4e1e80abcb37b7ea983c"):FireServer(unpack(args))
+          end
+          task.wait(0.1) -- Usar task.wait é a prática moderna no lugar de wait()
+      end
+  end)
 
---// Variáveis de Controle \\--
-local toggleAtivado = false -- Controla se o toggle está ligado ou desligado.
-local autoClickerThread = nil -- Armazena a nossa "thread" para que possamos pará-la depois.
 
---// Configuração - JÁ CONFIGURADO PARA VOCÊ \\--
--- Localiza o RemoteEvent específico que você encontrou.
-local remoteDoClique = game:GetService("ReplicatedStorage"):WaitForChild("2663824b812c4e1e80abcb37b7ea983c")
+    -- Variável para controlar se a função de auto levantar está ativa
+    local autoComprarAtivo = false
+  
+    -- Inicia um loop em uma nova thread para não travar o jogo
+    task.spawn(function()
+        while true do
+            -- A cada 0.1 segundos, verifica se a função está ativa
+            if autoComprarAtivo then
+              local args = {
+                "BUYALLWEIGHTS"
+              }
+              game:GetService("ReplicatedStorage"):WaitForChild("1eb183c1aa464630895584d6306f8a3c"):InvokeServer(unpack(args))              
+            end
+            task.wait(0.1) -- Usar task.wait é a prática moderna no lugar de wait()
+        end
+    end)
+  
+  local Toggle = Tabs.Farm:Toggle({
+   Title = "auto levantar",
+   Desc = "funciona sem precisar estar com o peso selecionado",
+   Icon = "bird",
+   Type = "Checkbox",
+   Default = false,
+   Callback = function(state)
+      -- A função do toggle agora é apenas mudar o estado da nossa variável de controle
+      autoLevantarAtivo = state
+  end
+  })
 
--- Argumento que será enviado ao servidor a cada clique.
-local argumentoDoClique = "24" --<< MUDANÇA AQUI: Adicionado o argumento que você forneceu.
-
---// Interface do Usuário (Seu código) \\--
--- Supondo que 'Tab' já foi definido pela sua UI Library.
-local Toggle = Tabs.Farm:Toggle({
-    Title = "Auto-Clique",
-    Desc = "Ative para começar a clicar automaticamente.",
-    Icon = "rbxassetid://6034823491", -- Ícone de um dedo clicando
+  local Toggle = Tab:Toggle({
+    Title = "Toggle",
+    Desc = "Toggle Description",
+    Icon = "bird",
     Type = "Checkbox",
     Default = false,
-    Callback = function(state)
-        toggleAtivado = state -- Atualiza nossa variável de controle com o estado do botão (true/false)
-        
-        if toggleAtivado then
-            -- Se o botão foi LIGADO, criamos uma nova thread para o loop de cliques.
-            print("Auto-Clique ATIVADO.")
-            
-            -- Usamos task.spawn para que o loop rode em segundo plano sem travar o jogo.
-            autoClickerThread = task.spawn(function()
-                -- O loop continuará enquanto o toggle estiver ativado.
-                while toggleAtivado do
-                    -- Dispara o evento para o servidor, simulando o clique com o argumento correto.
-                    -- O 'pcall' garante que, se o remote der erro, o script não quebre.
-                    pcall(function()
-                        remoteDoClique:FireServer(argumentoDoClique) --<< MUDANÇA AQUI: Agora envia o argumento "24".
-                    end)
-                    
-                    -- Espera um curto período antes do próximo clique.
-                    -- IMPORTANTE: Não use um valor muito baixo (como 0) para não ser desconectado do jogo.
-                    -- 0.2 segundos é um valor seguro e rápido. Ajuste conforme necessário.
-                    task.wait(0.2) 
-                end
-            end)
-        else
-            -- Se o botão foi DESLIGADO, paramos a thread.
-            print("Auto-Clique DESATIVADO.")
-            if autoClickerThread then
-                task.cancel(autoClickerThread) -- Cancela a thread do loop.
-                autoClickerThread = nil -- Limpa a variável.
-            end
-        end
+    Callback = function(state) 
+
+      autoComprarAtivo = state
     end
-})
-
-print("Script de Auto-Clique (versão específica) carregado com sucesso!")
-
-local ExtraSection = Tabs.Farm:Section({
-  Title = "Funções Extras",
-  Icon = "bird",
-  Opened = true,
 })
