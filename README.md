@@ -95,9 +95,9 @@ local PrincipalSection = Tabs.Farm:Section({
   end
   })
 
-  local Toggle = Tab:Toggle({
-    Title = "Toggle",
-    Desc = "Toggle Description",
+  local Toggle = Tabs.Farm:Toggle({
+    Title = "Auto Comprar",
+    Desc = "Compra todos os pesos disponiveis auto",
     Icon = "bird",
     Type = "Checkbox",
     Default = false,
