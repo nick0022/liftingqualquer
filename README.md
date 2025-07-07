@@ -64,9 +64,7 @@ local playerGui = player:WaitForChild("PlayerGui") -- Essencial para buscar os t
 local StatusParagraph = Tabs.Status:Paragraph({
     Title = "Estatísticas de " .. player.DisplayName,
     Desc = "Carregando estatísticas...",
-    Color = "gray", -- Cor personalizada
-    Thumbnail = "rbxassetid://16723221995", -- Ícone de "gráfico/stats"
-    ThumbnailSize = 80,
+    Color = "Green",
     Locked = false,
     Buttons = {} 
 })
