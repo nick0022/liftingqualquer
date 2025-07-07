@@ -50,52 +50,98 @@ local StatusSection = Tabs.Status:Section({
   Opened = true,
 })
 
+-- ===============================================================
+-- Script de Status do Jogador (Versão Personalizada)
+-- ===============================================================
+
+-- Serviços e Jogador Local
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local playerGui = player:WaitForChild("PlayerGui") -- Essencial para buscar os tempos
 
-
-local StatusParagraph = Tabs.Status:Paragraph({ 
-  Title = "Estatísticas de " .. player.DisplayName,
-  Desc = "Carregando...",
-  Locked = false,
-  Buttons = {} 
+-- Criação do Parágrafo de Status
+-- Usamos textos iniciais que serão substituídos na primeira atualização.
+local StatusParagraph = Tab:Paragraph({
+    Title = "Estatísticas de " .. player.DisplayName,
+    Desc = "Carregando estatísticas...",
+    Color = "gray", -- Cor personalizada
+    Thumbnail = "rbxassetid://16723221995", -- Ícone de "gráfico/stats"
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {} 
 })
 
--- 4. Função e Loop de atualização de status (o resto do código continua igual)
+-- Função para ATUALIZAR as informações do parágrafo
 local function updateStatus()
-  -- (O resto do seu código de busca de stats continua aqui, sem alterações)
-  local leaderstats = player:FindFirstChild("leaderstats")
-  
-  local strength = leaderstats and leaderstats:FindFirstChild("Strength") and leaderstats.Strength.Value or "N/A"
-  local coins = leaderstats and leaderstats:FindFirstChild("Coins") and leaderstats.Coins.Value or "N/A"
-  local stage = leaderstats and leaderstats:FindFirstChild("Stage") and leaderstats.Stage.Value or "N/A"
-  local kills = leaderstats and leaderstats:FindFirstChild("Kills") and leaderstats.Kills.Value or "N/A"
+    -- 1. Buscar os valores do 'leaderstats'
+    local leaderstats = player:FindFirstChild("leaderstats")
+    
+    -- Usamos 'or "N/A"' para o caso do valor ainda não existir
+    local strength = leaderstats and leaderstats:FindFirstChild("Strength") and leaderstats.Strength.Value or "N/A"
+    local coins = leaderstats and leaderstats:FindFirstChild("Coins") and leaderstats.Coins.Value or "N/A"
+    local stage = leaderstats and leaderstats:FindFirstChild("Stage") and leaderstats.Stage.Value or "N/A"
+    local kills = leaderstats and leaderstats:FindFirstChild("Kills") and leaderstats.Kills.Value or "N/A"
 
-  local timeWeight, timeStage, timeRebirth = "Buscando...", "Buscando...", "Buscando..."
-  local mainGui = playerGui:FindFirstChild("Main")
-  if mainGui and mainGui:FindFirstChild("Boosts") then
-      local boostsFrame = mainGui.Boosts
-      local wt = boostsFrame:FindFirstChild("UntilNextWeight")
-      if wt and wt:FindFirstChild("Frame") and wt.Frame:FindFirstChild("Button") and wt.Frame.Button:FindFirstChild("Text") and wt.Frame.Button.Text:FindFirstChild("Title") then timeWeight = wt.Frame.Button.Text.Title.Text end
-      local st = boostsFrame:FindFirstChild("UntilNextStage")
-      if st and st:FindFirstChild("Frame") and st.Frame:FindFirstChild("Button") and st.Frame.Button:FindFirstChild("Text") and st.Frame.Button.Text:FindFirstChild("Title") then timeStage = st.Frame.Button.Text.Title.Text end
-      local rt = boostsFrame:FindFirstChild("UntilRebirth")
-      if rt and rt:FindFirstChild("Frame") and rt.Frame:FindFirstChild("Button") and rt.Frame.Button:FindFirstChild("Text") and rt.Frame.Button.Text:FindFirstChild("Title") then timeRebirth = rt.Frame.Button.Text.Title.Text end
-  end
-  
-  local statusDescription = string.format(
-      "💪 Força: %s\n🪙 Moedas: %s\n🔪 Abates: %s\n🗺️ Estágio: %s\n\n⏱️ Próximo Peso: %s\n⏱️ Próximo Estágio: %s\n🔄 Próximo Renascimento: %s",
-      tostring(strength), tostring(coins), tostring(kills), tostring(stage), timeWeight, timeStage, timeRebirth
-  )
+    -- 2. Buscar os valores de TEMPO da Interface Gráfica (PlayerGui)
+    -- Este caminho é longo, então buscamos de forma segura passo a passo
+    local timeWeight = "Buscando..."
+    local timeStage = "Buscando..."
+    local timeRebirth = "Buscando..."
 
-  StatusParagraph:SetDesc(statusDescription)
+    local mainGui = playerGui:FindFirstChild("Main")
+    if mainGui then
+        local boostsFrame = mainGui:FindFirstChild("Boosts")
+        if boostsFrame then
+            -- Tempo para o Próximo Peso
+            local untilNextWeight = boostsFrame:FindFirstChild("UntilNextWeight")
+            if untilNextWeight and untilNextWeight:FindFirstChild("Frame") and untilNextWeight.Frame:FindFirstChild("Button") and untilNextWeight.Frame.Button:FindFirstChild("Text") and untilNextWeight.Frame.Button.Text:FindFirstChild("Title") then
+                timeWeight = untilNextWeight.Frame.Button.Text.Title.Text
+            end
+            
+            -- Tempo para o Próximo Estágio
+            local untilNextStage = boostsFrame:FindFirstChild("UntilNextStage")
+            if untilNextStage and untilNextStage:FindFirstChild("Frame") and untilNextStage.Frame:FindFirstChild("Button") and untilNextStage.Frame.Button:FindFirstChild("Text") and untilNextStage.Frame.Button.Text:FindFirstChild("Title") then
+                timeStage = untilNextStage.Frame.Button.Text.Title.Text
+            end
+
+            -- Tempo para o Próximo Renascimento
+            local untilRebirth = boostsFrame:FindFirstChild("UntilRebirth")
+            if untilRebirth and untilRebirth:FindFirstChild("Frame") and untilRebirth.Frame:FindFirstChild("Button") and untilRebirth.Frame.Button:FindFirstChild("Text") and untilRebirth.Frame.Button.Text:FindFirstChild("Title") then
+                timeRebirth = untilRebirth.Frame.Button.Text.Title.Text
+            end
+        end
+    end
+    
+    -- 3. Formatar todas as informações para exibição
+    -- \n\n cria uma linha em branco para separar os blocos de status.
+    local statusDescription = string.format(
+        "💪 Força: %s\n" ..
+        "🪙 Moedas: %s\n" ..
+        "🔪 Abates: %s\n" ..
+        "🗺️ Estágio: %s\n\n" .. -- Linha de separação
+        "⏱️ Próximo Peso: %s\n" ..
+        "⏱️ Próximo Estágio: %s\n" ..
+        "🔄 Próximo Renascimento: %s",
+        tostring(strength), 
+        tostring(coins), 
+        tostring(kills), 
+        tostring(stage),
+        timeWeight,
+        timeStage,
+        timeRebirth
+    )
+
+    -- 4. Atualizar o parágrafo na UI
+    StatusParagraph:SetDesc(statusDescription)
 end
 
+-- Loop de Atualização
+-- Roda a cada 1 segundo para manter as informações atualizadas sem sobrecarregar.
 task.spawn(function()
-  while task.wait(1) do
-      pcall(updateStatus)
-  end
+    while task.wait(1) do
+        -- 'pcall' executa a função de forma segura, prevenindo erros de parar o script.
+        pcall(updateStatus)
+    end
 end)
 
 
