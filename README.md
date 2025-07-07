@@ -168,3 +168,48 @@ local RollCrate = Tabs.Farm:Toggle({
     autoRollCrateAtivo = state
   end
 })
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local SellTp = Tabs.Farm:Button({
+    Title = "Vender e voltar",
+    Desc = "Vende e retorna automaticamente",
+    Locked = false,
+    Callback = function()
+        -- Verifica se o personagem do jogador existe
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+            print("Personagem não encontrado.")
+            return
+        end
+
+        local character = player.Character
+        local humanoidRootPart = character.HumanoidRootPart
+
+        -- 1. Salvar a posição original do jogador
+        local originalCFrame = humanoidRootPart.CFrame
+        print("Posição original salva:", originalCFrame.Position)
+
+        -- 2. Levar o jogador para a nova posição
+        -- Em Roblox, é melhor manipular o CFrame para teleporte
+        local newPosition = Vector3.new(-520, 13, -25)
+        humanoidRootPart.CFrame = CFrame.new(newPosition)
+        print("Teleportado para a nova posição.")
+
+        -- 3. Aguardar 5 segundos
+        task.wait(1) -- 'task.wait()' é a forma moderna e mais precisa de 'wait()'
+
+        -- Verifica novamente se o personagem ainda existe antes de voltar
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+            print("Personagem não encontrado para retornar.")
+            return
+        end
+        
+        -- Garante que estamos movendo a parte correta, caso o personagem tenha sido recarregado
+        humanoidRootPart = player.Character.HumanoidRootPart
+
+        -- 4. Voltar para a posição original
+        humanoidRootPart.CFrame = originalCFrame
+        print("Retornou à posição original.")
+    end
+})
