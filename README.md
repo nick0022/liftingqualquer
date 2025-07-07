@@ -306,7 +306,7 @@ end
 -- Criação do Toggle para ativar/desativar o sistema
 local AutoStageToggle = Tabs.Farm:Toggle({
     Title = "Auto Comprar Estágio",
-    Desc = "Compra o próximo estágio automaticamente até o " .. TARGET_STAGE,
+    Desc = "Compra o próximo estágio automaticamente quanto tiver o tempo zerado.",
     Icon = "package", -- Ícone de "level up"
     Type = "Checkbox",
     Default = false,
