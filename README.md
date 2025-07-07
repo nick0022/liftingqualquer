@@ -271,18 +271,13 @@ local RollCrate = Tabs.Farm:Toggle({
 })
 
 -- ===============================================================
--- Script de Venda Automática (Auto-Sell)
+-- Script de Venda Automática (Versão para Venda por Toque)
 -- ===============================================================
 
 -- Serviços e Jogador Local
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
-
--- Referência ao seu RemoteEvent que cuida da venda.
--- TROQUE "SeuEventoDeVenda" pelo nome real do seu RemoteEvent.
-local sellEvent = ReplicatedStorage:WaitForChild("SeuEventoDeVenda") 
 
 -- Variáveis de controle do sistema
 local isAutoSellActive = false  -- Controlado pelo Toggle
@@ -290,14 +285,14 @@ local isCurrentlySelling = false -- Debounce para a função de venda
 
 -- Função que executa a rotina de vender e voltar
 local function performAutoSell()
-    if isCurrentlySelling then return end -- Garante que não execute duas vezes
+    if isCurrentlySelling then return end
     
     isCurrentlySelling = true
-    print("[Auto-Sell] Rotina iniciada.")
+    print("[Auto-Sell] Rotina iniciada (venda por toque).")
 
     local character = player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
-        print("[Auto-Sell] Personagem não encontrado para iniciar a venda.")
+        print("[Auto-Sell] Personagem não encontrado.")
         isCurrentlySelling = false
         return
     end
@@ -305,18 +300,17 @@ local function performAutoSell()
     local humanoidRootPart = character.HumanoidRootPart
     local originalCFrame = humanoidRootPart.CFrame
     
-    -- Teleporta para a área de venda
-    print("[Auto-Sell] Teleportando para a área de venda.")
+    -- 1. Teleporta para a área de venda
+    print("[Auto-Sell] Teleportando para a área de venda...")
     local sellPosition = Vector3.new(-520, 13, -25)
     humanoidRootPart.CFrame = CFrame.new(sellPosition)
-    task.wait(0.5)
+    
+    -- 2. ESPERA para a venda por toque acontecer
+    print("[Auto-Sell] Aguardando na área para a venda ser processada...")
+    task.wait(2) -- TEMPO CRUCIAL! Espera 2 segundos para o jogo registrar o toque e vender os itens.
+                 -- Você pode aumentar ou diminuir este tempo se necessário.
 
-    -- Aciona a venda
-    print("[Auto-Sell] Disparando evento de venda.")
-    sellEvent:FireServer()
-    task.wait(1) -- Espera o processo de venda
-
-    -- Volta para a posição original
+    -- 3. Volta para a posição original
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         print("[Auto-Sell] Retornando à posição original.")
         player.Character.HumanoidRootPart.CFrame = originalCFrame
@@ -326,18 +320,18 @@ local function performAutoSell()
 
     task.wait(0.5)
     print("[Auto-Sell] Rotina finalizada.")
-    isCurrentlySelling = false -- Libera para a próxima rotina
+    isCurrentlySelling = false
 end
 
 -- Criação do Toggle para ativar/desativar o sistema
 local AutoSellToggle = Tabs.Farm:Toggle({
     Title = "Venda Automática",
-    Desc = "Vende e volta automaticamente quando o tempo de pegar o proximo peso ou stage estiver em 0.",
-    Icon = "package", -- Ícone de "repeat"
+    Desc = "Vende e volta automaticamente quando o tempo pra proximo pesso ou stage tiver em 0.",
+    Icon = "package",
     Type = "Checkbox",
     Default = false,
     Callback = function(state)
-        isAutoSellActive = state -- Atualiza o estado do sistema
+        isAutoSellActive = state
         if state then
             print("[Auto-Sell] Sistema ATIVADO.")
         else
@@ -348,15 +342,12 @@ local AutoSellToggle = Tabs.Farm:Toggle({
 
 -- Loop principal que verifica as condições em segundo plano
 task.spawn(function()
-    while task.wait(1) do -- Verifica a cada 1 segundo
-        -- Se o sistema estiver desligado ou já estiver vendendo, pula a verificação.
+    while task.wait(1) do
         if not isAutoSellActive or isCurrentlySelling then
             continue 
         end
         
-        -- Busca os textos dos timers
-        local timeWeight = "N/A"
-        local timeStage = "N/A"
+        local timeWeight, timeStage = "N/A", "N/A"
         local mainGui = playerGui:FindFirstChild("Main")
         if mainGui and mainGui:FindFirstChild("Boosts") then
             local boostsFrame = mainGui.Boosts
@@ -366,11 +357,10 @@ task.spawn(function()
             if st and st:FindFirstChild("Frame") and st.Frame:FindFirstChild("Button") and st.Frame.Button:FindFirstChild("Text") and st.Frame.Button.Text:FindFirstChild("Title") then timeStage = st.Frame.Button.Text.Title.Text end
         end
 
-        -- CONDIÇÃO DE ATIVAÇÃO: Verifica se algum dos timers zerou.
-        -- ATENÇÃO: Verifique se o texto é exatamente "0" ou se pode ser "0s", "Pronto!", etc.
+        -- CONDIÇÃO DE ATIVAÇÃO: Verifique se o texto é exatamente "0"
         if timeWeight == "0" or timeStage == "0" then
-            print("[Auto-Sell] Condição atingida! Tempo do peso/estágio zerado.")
-            performAutoSell() -- Chama a função de venda
+            print("[Auto-Sell] Condição atingida! Tempo zerado.")
+            performAutoSell()
         end
     end
 end)
