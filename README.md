@@ -54,8 +54,8 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- 1. Criação do Parágrafo com uma imagem temporária
-local StatusParagraph = Tabs.Status:Paragraph({ -- Mudei para StatusSection:Paragraph para consistência
+
+local StatusParagraph = Tabs.Status:Paragraph({ 
   Title = "Estatísticas de " .. player.DisplayName,
   Desc = "Carregando...",
   Locked = false,
