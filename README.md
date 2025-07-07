@@ -145,7 +145,7 @@ end)
 
 local PrincipalSection = Tabs.Farm:Section({
    Title = "Funções Principais",
-   Icon = "bird",
+   Icon = "package",
    Opened = true,
   })
   
@@ -225,7 +225,7 @@ local PrincipalSection = Tabs.Farm:Section({
   local Levantar = Tabs.Farm:Toggle({
    Title = "auto levantar",
    Desc = "funciona sem precisar estar com o peso selecionado",
-   Icon = "bird",
+   Icon = "package",
    Type = "Checkbox",
    Default = false,
    Callback = function(state)
@@ -237,7 +237,7 @@ local PrincipalSection = Tabs.Farm:Section({
   local Comprar = Tabs.Farm:Toggle({
     Title = "Auto Comprar",
     Desc = "Compra todos os pesos disponiveis automaticamente",
-    Icon = "bird",
+    Icon = "package",
     Type = "Checkbox",
     Default = false,
     Callback = function(state) 
@@ -249,7 +249,7 @@ local PrincipalSection = Tabs.Farm:Section({
 local EquipBest = Tabs.Farm:Toggle({
   Title = "Auto Equipar melhor pet",
   Desc = "equipa seus melhores pets automaticamente",
-  Icon = "bird",
+  Icon = "package",
   Type = "Checkbox",
   Default = false,
   Callback = function(state) 
@@ -261,7 +261,7 @@ local EquipBest = Tabs.Farm:Toggle({
 local RollCrate = Tabs.Farm:Toggle({
   Title = "Auto Girar caixa",
   Desc = "gira caixa automaticamente",
-  Icon = "bird",
+  Icon = "package",
   Type = "Checkbox",
   Default = false,
   Callback = function(state) 
@@ -270,12 +270,118 @@ local RollCrate = Tabs.Farm:Toggle({
   end
 })
 
+-- ===============================================================
+-- Script de Venda Automática (Auto-Sell)
+-- ===============================================================
+
+-- Serviços e Jogador Local
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Referência ao seu RemoteEvent que cuida da venda.
+-- TROQUE "SeuEventoDeVenda" pelo nome real do seu RemoteEvent.
+local sellEvent = ReplicatedStorage:WaitForChild("SeuEventoDeVenda") 
+
+-- Variáveis de controle do sistema
+local isAutoSellActive = false  -- Controlado pelo Toggle
+local isCurrentlySelling = false -- Debounce para a função de venda
+
+-- Função que executa a rotina de vender e voltar
+local function performAutoSell()
+    if isCurrentlySelling then return end -- Garante que não execute duas vezes
+    
+    isCurrentlySelling = true
+    print("[Auto-Sell] Rotina iniciada.")
+
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("[Auto-Sell] Personagem não encontrado para iniciar a venda.")
+        isCurrentlySelling = false
+        return
+    end
+
+    local humanoidRootPart = character.HumanoidRootPart
+    local originalCFrame = humanoidRootPart.CFrame
+    
+    -- Teleporta para a área de venda
+    print("[Auto-Sell] Teleportando para a área de venda.")
+    local sellPosition = Vector3.new(-520, 13, -25)
+    humanoidRootPart.CFrame = CFrame.new(sellPosition)
+    task.wait(0.5)
+
+    -- Aciona a venda
+    print("[Auto-Sell] Disparando evento de venda.")
+    sellEvent:FireServer()
+    task.wait(1) -- Espera o processo de venda
+
+    -- Volta para a posição original
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        print("[Auto-Sell] Retornando à posição original.")
+        player.Character.HumanoidRootPart.CFrame = originalCFrame
+    else
+        print("[Auto-Sell] Personagem não encontrado para retornar.")
+    end
+
+    task.wait(0.5)
+    print("[Auto-Sell] Rotina finalizada.")
+    isCurrentlySelling = false -- Libera para a próxima rotina
+end
+
+-- Criação do Toggle para ativar/desativar o sistema
+local AutoSellToggle = Tabs.Farm:Toggle({
+    Title = "Venda Automática",
+    Desc = "Vende e volta automaticamente quando o tempo de pegar o proximo peso ou stage estiver em 0.",
+    Icon = "package", -- Ícone de "repeat"
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        isAutoSellActive = state -- Atualiza o estado do sistema
+        if state then
+            print("[Auto-Sell] Sistema ATIVADO.")
+        else
+            print("[Auto-Sell] Sistema DESATIVADO.")
+        end
+    end
+})
+
+-- Loop principal que verifica as condições em segundo plano
+task.spawn(function()
+    while task.wait(1) do -- Verifica a cada 1 segundo
+        -- Se o sistema estiver desligado ou já estiver vendendo, pula a verificação.
+        if not isAutoSellActive or isCurrentlySelling then
+            continue 
+        end
+        
+        -- Busca os textos dos timers
+        local timeWeight = "N/A"
+        local timeStage = "N/A"
+        local mainGui = playerGui:FindFirstChild("Main")
+        if mainGui and mainGui:FindFirstChild("Boosts") then
+            local boostsFrame = mainGui.Boosts
+            local wt = boostsFrame:FindFirstChild("UntilNextWeight")
+            if wt and wt:FindFirstChild("Frame") and wt.Frame:FindFirstChild("Button") and wt.Frame.Button:FindFirstChild("Text") and wt.Frame.Button.Text:FindFirstChild("Title") then timeWeight = wt.Frame.Button.Text.Title.Text end
+            local st = boostsFrame:FindFirstChild("UntilNextStage")
+            if st and st:FindFirstChild("Frame") and st.Frame:FindFirstChild("Button") and st.Frame.Button:FindFirstChild("Text") and st.Frame.Button.Text:FindFirstChild("Title") then timeStage = st.Frame.Button.Text.Title.Text end
+        end
+
+        -- CONDIÇÃO DE ATIVAÇÃO: Verifica se algum dos timers zerou.
+        -- ATENÇÃO: Verifique se o texto é exatamente "0" ou se pode ser "0s", "Pronto!", etc.
+        if timeWeight == "0" or timeStage == "0" then
+            print("[Auto-Sell] Condição atingida! Tempo do peso/estágio zerado.")
+            performAutoSell() -- Chama a função de venda
+        end
+    end
+end)
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 local SellTp = Tabs.Farm:Button({
-    Title = "Vender e voltar",
+    Title = "Vender e voltar manual",
     Desc = "Vende e retorna automaticamente",
+    Icon = "package",
     Locked = false,
     Callback = function()
         -- Verifica se o personagem do jogador existe
