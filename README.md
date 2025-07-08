@@ -243,7 +243,7 @@ local PrincipalSection = Tabs.Farm:Section({
 })
 
 -- ===============================================================
--- Script de Compra Automática de Estágio (VERSÃO CORRIGIDA)
+-- Script de Compra Automática de Estágio (VERSÃO COM MAPA DE NOMES)
 -- ===============================================================
 
 -- Serviços e Jogador Local
@@ -252,9 +252,24 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- =========================================================================================
+-- >> CONFIGURAÇÃO OBRIGATÓRIA: PREENCHA ESTE MAPA <<
+-- Coloque o NOME EXATO de todos os seus estágios, NA ORDEM CORRETA, um por linha.
+local stageOrder = {
+    "Ice",        -- Estágio 1
+    "Fire",        -- Estágio 2
+    "Electricity",       -- Estágio 3
+    "Lava",        -- Estágio 4
+    "Light",        -- Estágio 5
+    "Darkness",       -- Estágio 6 (Exemplo, continue adicionando os seus)
+    "Toxic",       -- ... e assim por diante até o último
+    "Blood"
+}
+-- =========================================================================================
+
 -- Configurações do sistema
 local REMOTE_NAME = "2663824b812c4e1e80abcb37b7ea983c"
-local TARGET_STAGE = 51
+local TARGET_STAGE = 51 -- O número do estágio final que você quer alcançar
 local remoteEvent = ReplicatedStorage:WaitForChild(REMOTE_NAME)
 
 -- Variáveis de controle
@@ -275,73 +290,56 @@ local function performStageBuy()
         return
     end
 
-    -- =========================================================================================
-    -- >> CORREÇÃO AQUI <<
-    -- Convertendo o valor do 'Stage' (que é um texto) para um número usando tonumber()
-    local currentStage = tonumber(stageStat.Value)
+    local currentStageName = stageStat.Value
 
-    -- Adicionamos uma segurança para caso o valor não seja um número válido
-    if not currentStage then
-        print("[Auto-Stage] O valor do Stage não é um número! Valor:", stageStat.Value)
+    -- NOVO: Encontra o NÚMERO do estágio atual usando o mapa 'stageOrder'
+    local currentStageNum = table.find(stageOrder, currentStageName)
+
+    if not currentStageNum then
+        print("[Auto-Stage] Nome do estágio '"..currentStageName.."' não foi encontrado no mapa 'stageOrder' do script!")
         isCurrentlyBuying = false
         return
     end
-    -- =========================================================================================
-
+    
     -- Verifica se já atingimos a meta
-    if currentStage >= TARGET_STAGE then
+    if currentStageNum >= TARGET_STAGE then
         print("[Auto-Stage] Meta de Stage", TARGET_STAGE, "atingida! Desativando sistema.")
         isAutoBuyActive = false
         isCurrentlyBuying = false
         return
     end
 
-    local nextStageNumber = currentStage + 1
-    local nextStageName = "Stage" .. tostring(nextStageNumber)
+    local nextStageNumber = currentStageNum + 1
+    local remoteStageName = "Stage" .. tostring(nextStageNumber)
     
-    local args = { -4, nextStageName }
+    local args = { -4, remoteStageName }
 
-    print("[Auto-Stage] Comprando o próximo estágio:", nextStageName)
+    print("[Auto-Stage] Comprando o próximo estágio: " .. remoteStageName .. " (Número " .. nextStageNumber .. ")")
     remoteEvent:FireServer(unpack(args))
 
-    task.wait(1)
+    task.wait(1.5) -- Aumentei um pouco a pausa para dar tempo do leaderstat atualizar
     isCurrentlyBuying = false
 end
 
--- Criação do Toggle para ativar/desativar o sistema
+-- (O resto do script do Toggle e do Loop continua exatamente igual)
 local AutoStageToggle = Tabs.Farm:Toggle({
     Title = "Auto Comprar Estágio",
-    Desc = "Compra o próximo estágio automaticamente quanto tiver o tempo zerado.",
+    Desc = "Compra o próximo estágio automaticamente até o " .. TARGET_STAGE,
     Icon = "package",
     Type = "Checkbox",
     Default = false,
-    Callback = function(state)
-        isAutoBuyActive = state
-        if state then
-            print("[Auto-Stage] Sistema ATIVADO.")
-        else
-            print("[Auto-Stage] Sistema DESATIVADO.")
-        end
-    end
+    Callback = function(state) isAutoBuyActive = state if state then print("[Auto-Stage] Sistema ATIVADO.") else print("[Auto-Stage] Sistema DESATIVADO.") end end
 })
-
--- Loop principal que verifica as condições em segundo plano
 task.spawn(function()
     while task.wait(1) do
-        if not isAutoBuyActive or isCurrentlyBuying then
-            continue 
-        end
-        
+        if not isAutoBuyActive or isCurrentlyBuying then continue end
         local timeStage = "N/A"
         local mainGui = playerGui:FindFirstChild("Main")
         if mainGui and mainGui:FindFirstChild("Boosts") then
             local boostsFrame = mainGui.Boosts
             local st = boostsFrame:FindFirstChild("UntilNextStage")
-            if st and st:FindFirstChild("Frame") and st.Frame:FindFirstChild("Button") and st.Frame.Button:FindFirstChild("Text") and st.Frame.Button.Text:FindFirstChild("Title") then
-                timeStage = st.Frame.Button.Text.Title.Text
-            end
+            if st and st:FindFirstChild("Frame") and st.Frame:FindFirstChild("Button") and st.Frame.Button:FindFirstChild("Text") and st.Frame.Button.Text:FindFirstChild("Title") then timeStage = st.Frame.Button.Text.Title.Text end
         end
-
         if timeStage == "00:00:00" then
             print("[Auto-Stage] Condição atingida! Tempo de estágio zerado.")
             performStageBuy()
