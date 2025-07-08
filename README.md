@@ -265,7 +265,17 @@ local stageOrder = {
     "Toxic",       -- ... e assim por diante até o último
     "Blood",
     "Gold",
-    "Lighting + Wind"
+    "Lighting + Wind",
+    "Galaxy",
+    "Crystal Magic",
+    "Lighting + Ice",
+    "Bright Rainbow",
+    "Bright Rainbow Forcefield",
+    "Gold + Lighting",
+    "Elements",
+    "Blood + Darkness",
+    "Ying-Yang",
+    "Flame's Stage"
 }
 -- =========================================================================================
 
