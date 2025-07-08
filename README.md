@@ -263,7 +263,9 @@ local stageOrder = {
     "Light",        -- Estágio 5
     "Darkness",       -- Estágio 6 (Exemplo, continue adicionando os seus)
     "Toxic",       -- ... e assim por diante até o último
-    "Blood"
+    "Blood",
+    "Gold",
+    "Lighting + Wind"
 }
 -- =========================================================================================
 
@@ -324,7 +326,7 @@ end
 -- (O resto do script do Toggle e do Loop continua exatamente igual)
 local AutoStageToggle = Tabs.Farm:Toggle({
     Title = "Auto Comprar Estágio",
-    Desc = "Compra o próximo estágio automaticamente até o " .. TARGET_STAGE,
+    Desc = "Compra o próximo estágio automaticamente",
     Icon = "package",
     Type = "Checkbox",
     Default = false,
@@ -423,7 +425,7 @@ end
 -- Criação do Toggle para ativar/desativar o sistema
 local AutoSellToggle = Tabs.Farm:Toggle({
     Title = "Venda Automática",
-    Desc = "Vende e volta automaticamente quando o tempo pra proximo pesso ou stage tiver em 0.",
+    Desc = "Vende e volta automaticamente quando o tempo pra proximo pesso ou stage tiver zerado.",
     Icon = "package",
     Type = "Checkbox",
     Default = false,
