@@ -37,7 +37,7 @@ local Tabs = {
 }
 
 Window:SelectTab(1)
-
+print("V 1.1.0")
 
 
 local StatusSection = Tabs.Home:Section({
