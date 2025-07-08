@@ -32,7 +32,7 @@ local Window = WindUI:CreateWindow({
 
 -- Create tabs
 local Tabs = {
-    Status = Window:Tab({Title = "Home", Icon = "house"}),
+    Home = Window:Tab({Title = "Home", Icon = "house"}),
     Farm = Window:Tab({Title = "Farm", Icon = "package"}),
 }
 
@@ -40,7 +40,7 @@ Window:SelectTab(1)
 
 
 
-local StatusSection = Tabs.Status:Section({
+local StatusSection = Tabs.Home:Section({
   Title = "Status do Player",
   Icon = "chart-no-axes-column",
   Opened = true,
@@ -57,7 +57,7 @@ local playerGui = player:WaitForChild("PlayerGui") -- Essencial para buscar os t
 
 -- Criação do Parágrafo de Status
 -- Usamos textos iniciais que serão substituídos na primeira atualização.
-local StatusParagraph = Tabs.Status:Paragraph({
+local StatusParagraph = Tabs.Home:Paragraph({
     Title = "Estatísticas de " .. player.DisplayName,
     Desc = "Carregando estatísticas...",
     Color = "Green",
@@ -137,6 +137,51 @@ task.spawn(function()
         pcall(updateStatus)
     end
 end)
+
+Tabs.Home:Button({
+    Title = "📄 Infinity Yield",
+    Desc = "Execute the Infinity Yield script",
+    Icon = "house",
+    Locked = false,
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+        WindUI:Notify({
+            Title = "📄 Infinity Yield",
+            Content = "The Infinity Yield script has been executed successfully!",
+            Duration = 1
+        })
+    end
+})
+
+Tabs.Home:Button({
+    Title = "📄 Moon AntiAfk",
+    Desc = "Execute the Moon AntiAfk script",
+    Icon = "house",
+    Locked = false,
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/rodri0022/afkmoon/refs/heads/main/README.md', true))()
+        WindUI:Notify({
+            Title = "📄 Moon AntiAfk",
+            Content = "The Moon AntiAfk script has been executed!",
+            Duration = 1
+        })
+    end
+})
+
+Tabs.Home:Button({
+    Title = "📄 Moon AntiLag",
+    Desc = "Execute the Moon AntiLag script",
+    Icon = "house",
+    Locked = false,
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/nick0022/antilag/refs/heads/main/README.md', true))()
+        WindUI:Notify({
+            Title = "📄 Moon AntiLag",
+            Content = "The Moon AntiLag script has been executed!",
+            Duration = 1
+        })
+    end
+})
 
 
 local PrincipalSection = Tabs.Farm:Section({
