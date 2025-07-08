@@ -270,12 +270,7 @@ local stageOrder = {
     "Crystal Magic",
     "Lighting + Ice",
     "Bright Rainbow",
-    "Bright Rainbow Forcefield",
-    "Gold + Lighting",
-    "Elements",
-    "Blood + Darkness",
-    "Ying-Yang",
-    "Flame's Stage"
+    "Bright Rainbow Forcefield"
 }
 -- =========================================================================================
 
