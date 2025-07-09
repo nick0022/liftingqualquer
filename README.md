@@ -37,7 +37,7 @@ local Tabs = {
 }
 
 Window:SelectTab(1)
-print("V 1.1.0")
+print("V 1.1.5")
 
 
 local StatusSection = Tabs.Home:Section({
@@ -320,7 +320,12 @@ local stageOrder = {
     "Elements",
     "Blood + Darkness",
     "Ying-Yang",
-    "Flame's Stage"
+    "Flame's Stage",
+    "Flame's Stage OMega",
+    "Galaxy + Singularity",
+    "Robot + Dark Rainbow",
+    "Gold + Fire",
+    "Rainbow + Elektra"
 }
 -- =========================================================================================
 
